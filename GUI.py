@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from gauss_solver import *
+from orbit_map import *
 
 # I named this 'dummy_function' while developing the GUI
 # and here it still stands to this day
@@ -34,6 +35,9 @@ def dummy_function(*args):
     obs3 = Observation(RA3, DEC3, time3, datetime3)
 
     orbital_elements = gauss(obs1, obs2, obs3)
+    generate_orbits(orbital_elements["e"], orbital_elements["arg_peri"],
+                    orbital_elements["a"], orbital_elements["lon_asc"],
+                    orbital_elements["i"])
 
     result = ""
     for key, value in orbital_elements.items():

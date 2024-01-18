@@ -1,4 +1,5 @@
 from gauss_solver import *
+from orbit_map import *
 
 # = = = OBSERVATION INPUT = = = 
 obs1_RA = RightAscension(44, 51, 12.05)
@@ -29,3 +30,8 @@ orbital_elements = gauss(obs1, obs2, obs3)
 
 # print result
 print(orbital_elements)
+
+# map the orbit
+generate_orbits(orbital_elements["e"], orbital_elements["arg_peri"],
+                orbital_elements["a"], orbital_elements["lon_asc"],
+                orbital_elements["i"])

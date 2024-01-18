@@ -87,6 +87,9 @@ def dist_poly_solver(a, b, c, tolerance=1e-4, maxiter=1e8, relaxation=0.0005):
     if itercount == maxiter:
         print("Did not converge!")
 
+    if x < 0:
+        print("Negative distance!")
+
     return x
 
 def gauss(obs1, obs2, obs3, Rs=None):
@@ -174,4 +177,5 @@ def gauss(obs1, obs2, obs3, Rs=None):
     # return yv_r2, vel2 # returns position vector and velocity vector for second observation (km, km/s)
 
     orbital_elements = state2kepler(yv_r2, vel2)
+    print(yv_r2, vel2)
     return orbital_elements
