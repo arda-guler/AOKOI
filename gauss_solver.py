@@ -46,7 +46,10 @@ class Declination:
         return math.radians(deg_decimal)
 
     def toDeg(self):
-        return self.d + self.m / 60 + self.s / 3600
+        if not self.neg:
+            return self.d + self.m / 60 + self.s / 3600
+        else:
+            return -1 * (self.d + self.m / 60 + self.s / 3600)
 
 class Observation:
     def __init__(self, RA, DEC, time, datetime):
@@ -61,7 +64,8 @@ def sind(x):
 def cosd(x):
     return np.cos(np.radians(x))
 
-def dist_poly_solver(a, b, c, tolerance=1e-4, maxiter=1e8, relaxation=0.0005):
+# outdated solver
+def dist_poly_solver(a, b, c, tolerance=1e-4, maxiter=1e8, relaxation=0.005):
     
     def f(x):
         return x**8 + a*x**6 + b*x**3 + c
@@ -69,7 +73,7 @@ def dist_poly_solver(a, b, c, tolerance=1e-4, maxiter=1e8, relaxation=0.0005):
     def df(x):
         return 8*x**7 + a*6*x**5 + 3*b*x**2
 
-    x = 100000  # this is a bloody random initial value
+    x = 1       # this is a bloody random initial value
                 # discovered to usually work with trial and error
     error = tolerance * 1e8
     itercount = 0
@@ -156,26 +160,40 @@ def gauss(obs1, obs2, obs3, Rs=None):
     lc_b = -2*mu*B*(A+E)
     lc_c = -mu**2 * B**2
 
-    lc_r2 = dist_poly_solver(lc_a, lc_b, lc_c)
+    #lc_r2 = dist_poly_solver(lc_a, lc_b, lc_c)
+    # x**8 + a*x**6 + b*x**3 + c
+    lc_r2_coeffs = [1, 0, lc_a, 0, 0, lc_b, 0, 0, lc_c]
+    lc_r2 = np.roots(lc_r2_coeffs)
 
-    # slant range
-    nv_rho1 = 1/D0 * ((6 * (D31 * tau1/tau3 + D21 * tau/tau3) * lc_r2**3 + mu * D31 * (tau**2 - tau1**2) * tau1/tau3) / (6*lc_r2**3 + mu * (tau**2 - tau3**2)) - D11)
-    nv_rho2 = A + mu*B/lc_r2**3
-    nv_rho3 = 1/D0 * ((6 * (D13 * tau3/tau1 - D23 * tau/tau1) * lc_r2**3 + mu * D13 * (tau**2 - tau3**2) * tau3/tau1) / (6*lc_r2**3 + mu*(tau**2 - tau1**2)) - D33)
+    lc_r2_possible = []
+    for i in range(len(lc_r2)):
+        reslt = lc_r2[i]
+        if abs(reslt.imag) < 1e-2:
+            lc_r2_possible.append(lc_r2[i].real)
 
-    yv_r1 = R1 + nv_rho1 * rho1
-    yv_r2 = R2 + nv_rho2 * rho2
-    yv_r3 = R3 + nv_rho3 * rho3
+    lc_r2 = lc_r2_possible
+    orbital_elements_all = []
+    for i in range(len(lc_r2)):
+        # slant range
+        nv_rho1 = 1/D0 * ((6 * (D31 * tau1/tau3 + D21 * tau/tau3) * lc_r2[i]**3 + mu * D31 * (tau**2 - tau1**2) * tau1/tau3) / (6*lc_r2[i]**3 + mu * (tau**2 - tau3**2)) - D11)
+        nv_rho2 = A + mu*B/lc_r2[i]**3
+        nv_rho3 = 1/D0 * ((6 * (D13 * tau3/tau1 - D23 * tau/tau1) * lc_r2[i]**3 + mu * D13 * (tau**2 - tau3**2) * tau3/tau1) / (6*lc_r2[i]**3 + mu*(tau**2 - tau1**2)) - D33)
 
-    f1 = 1 - 0.5 * mu/lc_r2**3 * tau1**2
-    f3 = 1 - 0.5 * mu/lc_r2**3 * tau3**2
-    g1 = tau1 - 1/6 * mu/lc_r2**3 * tau1**3
-    g3 = tau3 - 1/6 * mu/lc_r2**3 * tau3**3
+        yv_r1 = R1 + nv_rho1 * rho1
+        yv_r2 = R2 + nv_rho2 * rho2
+        yv_r3 = R3 + nv_rho3 * rho3
 
-    vel2 = 1/(f1*g3 - f3*g1) * (-f3 * yv_r1 + f1 * yv_r3)
+        f1 = 1 - 0.5 * mu/lc_r2[i]**3 * tau1**2
+        f3 = 1 - 0.5 * mu/lc_r2[i]**3 * tau3**2
+        g1 = tau1 - 1/6 * mu/lc_r2[i]**3 * tau1**3
+        g3 = tau3 - 1/6 * mu/lc_r2[i]**3 * tau3**3
 
-    # return yv_r2, vel2 # returns position vector and velocity vector for second observation (km, km/s)
+        vel2 = 1/(f1*g3 - f3*g1) * (-f3 * yv_r1 + f1 * yv_r3)
 
-    orbital_elements = state2kepler(yv_r2, vel2)
-    print(yv_r2, vel2)
-    return orbital_elements
+        # return yv_r2, vel2 # returns position vector and velocity vector for second observation (km, km/s)
+
+        orbital_elements = state2kepler(yv_r2, vel2)
+        orbital_elements_all.append(orbital_elements)
+        print("State vectors:", yv_r2 * 6.684587e-9 , vel2)
+        
+    return orbital_elements_all

@@ -34,16 +34,20 @@ def dummy_function(*args):
     obs2 = Observation(RA2, DEC2, time2, datetime2)
     obs3 = Observation(RA3, DEC3, time3, datetime3)
 
-    orbital_elements = gauss(obs1, obs2, obs3)
-    generate_orbits(orbital_elements["e"], orbital_elements["arg_peri"],
-                    orbital_elements["a"], orbital_elements["lon_asc"],
-                    orbital_elements["i"])
+    orbital_elements_all = gauss(obs1, obs2, obs3)
+    for i in range(len(orbital_elements_all)):
+        orbital_elements = orbital_elements_all[i]
+        generate_orbits(orbital_elements["e"], orbital_elements["arg_peri"],
+                        orbital_elements["a"], orbital_elements["lon_asc"],
+                        orbital_elements["i"])
 
     result = ""
-    for key, value in orbital_elements.items():
-       result += f"{key}: {value}\n"
+    for orbital_elements in orbital_elements_all:
+        for key, value in orbital_elements.items():
+           result += f"{key}: {value}\n"
+        result += "\n"
     
-    return f"Orbital Elements:\n\n{result}"
+    return f"Possible Orbital Elements:\n\n{result}"
 
 def on_button_click():
     entry_values = [entry.get() for row in entry_rows for entry in row]

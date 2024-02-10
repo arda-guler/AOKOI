@@ -1,6 +1,6 @@
 import requests
 
-def get_earth_position_vector(date):
+def get_earth_position_vector(date, velvec=False):
     base_url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
     
     # Set up parameters for the API request
@@ -17,8 +17,8 @@ def get_earth_position_vector(date):
         'VEC_LABELS': "'NO'",
         'VEC_DELTA_T': "'YES'",
         'TARGET': "'10'",
-        'START_TIME': f"'{date} 00:00:00'",
-        'STOP_TIME': f"'{date} 23:00:00'",
+        'START_TIME': f"'{date}'",
+        'STOP_TIME': f"'{date}:59'",
         'STEP_SIZE': "'1d'",
         'CSV_FORMAT': "'YES'"
     }
@@ -39,11 +39,16 @@ def get_earth_position_vector(date):
         
         # Extract x, y, z coordinates from the response
         x, y, z = map(float, values[3:6])
+        vx, vy, vz = map(float, values[6:9])
         
         # Return the position vector (km)
-        return [x, y, z]
+        if not velvec:
+            return [x, y, z]
+        else:
+            return [x, y, z], [vx, vy, vz]
         # return {'x': x, 'y': y, 'z': z}
     else:
         print(f"Error: Unable to fetch data. Status code: {response.status_code}")
         return None
 
+get_earth_position_vector("2001-01-01 00")

@@ -40,6 +40,7 @@ def state2kepler(r_vec, v_vec):
         M = E - ecc * np.sin(E)
 
         sma = 1 / (2/np.linalg.norm(r_vec) - np.linalg.norm(v_vec)**2 / mu)
+        sma = sma * 6.684587e-9 # convert to AU
         
         return {"a": sma,
                 "e": ecc,
