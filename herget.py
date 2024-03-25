@@ -11,7 +11,7 @@ def sind(x):
 def cosd(x):
     return np.cos(np.radians(x))
 
-def herget(obs1, obs2, R, Es = None):
+def herget(obs1, obs2, R, Es=None, tol=0.0002):
     AU = 1.495979e8
     mu = 132712e6
 
@@ -46,16 +46,16 @@ def herget(obs1, obs2, R, Es = None):
     # initial guess
     v1 = (p2 - p1) / delta_t
 
-    pmid = (p1 + p2) * 0.5
-    amid = mu * pmid / (np.linalg.norm(pmid)**3)
-
+    # first order correction for the fancy tasks
+    # pmid = (p1 + p2) * 0.5
+    # amid = mu * pmid / (np.linalg.norm(pmid)**3)
     # v1 = (p2 - p1) / delta_t - amid * delta_t / 2
 
     K = 1
     h = delta_t / 1000
-    delta = 10 * AU
+    delta = 10 * tol * AU
     attempts = 1
-    while delta > 0.0002 * AU:
+    while delta > tol * AU:
         v = v1
         p = p1
         for i in range(1000):

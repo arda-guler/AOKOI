@@ -9,11 +9,12 @@ def main(args):
     ri = 0.01
     rf = 5
     input_filename = None
+    tol = 0.0002
 
     current_argtype = "-f"
     if len(args) > 2:
         for arg in args:
-            if arg in ["-f", "-r0", "-ri", "-rf"]:
+            if arg in ["-f", "-r0", "-ri", "-rf", "-tol"]:
                 current_argtype = arg
             else:
                 if current_argtype == "-r0":
@@ -24,6 +25,8 @@ def main(args):
                     rf = float(arg)
                 elif current_argtype == "-f":
                     input_filename = arg
+                elif current_argtype == "-tol":
+                    tol = float(arg)
                 else:
                     print("Invalid argtype. How the hell did this happen?")
 
@@ -49,7 +52,7 @@ def main(args):
 
     os = []
     for r in rs:
-        oe = herget(obs1, obs2, r, [E1, E2])
+        oe = herget(obs1, obs2, r, [E1, E2], tol)
         os.append(oe)
 
     for o in os:
