@@ -5,14 +5,30 @@ from herget import *
 from observation import *
 
 def main(args):
-    if len(args) > 1:
-        input_filename = args[1]
-    else:
-        input_filename = input("Observation filename: ")
+    r0 = 0.2
+    ri = 0.01
+    rf = 5
+    input_filename = None
 
-    if not input_filename:
-        print("Input file not provided! Quitting...")
-        return
+    current_argtype = "-f"
+    if len(args) > 2:
+        for arg in args:
+            if arg in ["-f", "-r0", "-ri", "-rf"]:
+                current_argtype = arg
+            else:
+                if current_argtype == "-r0":
+                    r0 = float(arg)
+                elif current_argtype == "-ri":
+                    ri = float(arg)
+                elif current_argtype == "-rf":
+                    rf = float(arg)
+                elif current_argtype == "-f":
+                    input_filename = arg
+                else:
+                    print("Invalid argtype. How the hell did this happen?")
+
+    while not input_filename:
+        input_filename = input("Observation filename: ")
 
     f = open(input_filename, "r")
     lines = f.readlines()
@@ -28,8 +44,8 @@ def main(args):
 
     AU = 1.495979e8
     rs = []
-    for i in range(300):
-        rs.append(1 + i / 100 * AU)
+    for i in range(int((rf - r0)/ri)):
+        rs.append((r0 + i * ri) * AU)
 
     os = []
     for r in rs:
