@@ -2,6 +2,10 @@ import requests
 
 def get_earth_position_vector(date, velvec=False):
     base_url = "https://ssd.jpl.nasa.gov/horizons_batch.cgi"
+
+    date2 = date[:10] + " 23:59"
+
+    print(date)
     
     # Set up parameters for the API request
     params = {
@@ -18,7 +22,7 @@ def get_earth_position_vector(date, velvec=False):
         'VEC_DELTA_T': "'YES'",
         'TARGET': "'10'",
         'START_TIME': f"'{date}'",
-        'STOP_TIME': f"'{date}:59'",
+        'STOP_TIME': f"'{date2}'",
         'STEP_SIZE': "'1d'",
         'CSV_FORMAT': "'YES'"
     }
@@ -51,4 +55,4 @@ def get_earth_position_vector(date, velvec=False):
         print(f"Error: Unable to fetch data. Status code: {response.status_code}")
         return None
 
-get_earth_position_vector("2001-01-01 00")
+# print(get_earth_position_vector("2001-01-01 00"))
